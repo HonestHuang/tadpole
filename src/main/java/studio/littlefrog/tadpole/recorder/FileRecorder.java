@@ -63,10 +63,16 @@ public class FileRecorder implements IRecorder {
 
     @Override
     public IRecorder br() {
-        write(ByteBuffer.wrap((lineSeparator).getBytes()));
-        return this;
+        return br(1);
     }
 
+    @Override
+    public IRecorder br(Integer num) {
+        for (int i = 0; i < num; i++) {
+            write(ByteBuffer.wrap((lineSeparator).getBytes()));
+        }
+        return this;
+    }
 
     private synchronized void write(ByteBuffer msgBuffer) {
         if (byteBuffer.remaining() >= msgBuffer.remaining()) {
@@ -125,7 +131,7 @@ public class FileRecorder implements IRecorder {
         TimeWatch watch = new TimeWatch();
         watch.start();
         try (IRecorder recorder = new FileRecorder("E:\\log", "b.txt")) {
-            for (int i = 0; i < 1024000; i++) {
+            for (int i = 0; i < 102400000; i++) {
                 recorder.append("index" + i).br();
             }
         }
