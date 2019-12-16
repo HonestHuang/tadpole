@@ -132,7 +132,7 @@ public class FileRecorder implements IRecorder {
         watch.start();
         try (IRecorder recorder = new FileRecorder("E:\\log", "b.txt")) {
             for (int i = 0; i < 102400000; i++) {
-                recorder.append("index" + i).br();
+                recorder.append("0");
             }
         }
         watch.stop();

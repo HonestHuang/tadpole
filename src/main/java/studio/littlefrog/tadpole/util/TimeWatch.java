@@ -25,7 +25,7 @@ public class TimeWatch {
 
     public TimeWatch() {
         this.consoleConsumer = (title, time) -> {
-            logger.info("作业{}耗时{}毫秒", title, time);
+            logger.info("作业<{}>耗时{}毫秒", title, time);
         };
     }
 
