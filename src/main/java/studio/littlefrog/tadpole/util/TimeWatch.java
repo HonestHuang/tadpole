@@ -2,7 +2,6 @@ package studio.littlefrog.tadpole.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import studio.littlefrog.tadpole.excel.exporter.Exporter;
 import studio.littlefrog.tadpole.validator.Assert;
 
 import java.util.HashMap;
@@ -71,17 +70,4 @@ public class TimeWatch {
             this.key = key;
         }
     }
-
-    public static void main(String args[]) throws Exception {
-
-        TimeWatch watch = new TimeWatch((title, time) -> {
-            System.out.println(String.format("任务%s使用时间%dms", title, time));
-        });
-        watch.start("task-1").start("task-all");
-        Thread.sleep(1000);
-        watch.stop("task-1").start("task-2");
-        Thread.sleep(3000);
-        watch.stopAll();
-    }
-
 }

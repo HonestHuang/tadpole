@@ -2,6 +2,7 @@ package studio.littlefrog.tadpole.recorder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import studio.littlefrog.tadpole.util.TimeWatch;
 import studio.littlefrog.tadpole.validator.Assert;
 
 import java.io.File;
@@ -105,13 +106,13 @@ public class FileRecorder implements IRecorder {
     }
 
     public static void main(String args[]) throws Exception {
-        long start = System.currentTimeMillis();
+        TimeWatch watch = new TimeWatch();
+        watch.start();
         try (IRecorder recorder = new FileRecorder("E:\\log", "a.txt")) {
             for (int i = 0; i < 1024000; i++) {
                 recorder.append("测试1111111111111111" + i).br();
             }
         }
-        long end = System.currentTimeMillis();
-        System.out.println("耗时" + (end - start) + "ms");
+        watch.stop();
     }
 }
