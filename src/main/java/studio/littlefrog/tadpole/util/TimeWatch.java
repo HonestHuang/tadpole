@@ -65,12 +65,14 @@ public class TimeWatch {
 
     public static void main(String args[]) throws Exception {
 
-        TimeWatch watch = new TimeWatch();
-        watch.start("task-1");
+        TimeWatch watch = new TimeWatch((title,time)->{
+            System.out.println(String.format("任务%s使用时间%dms",title,time));
+        });
+        watch.start("task-1").start("task-all");
         Thread.sleep(3000);
         watch.stop("task-1").start("task-2");
         Thread.sleep(5000);
-        watch.stop("task-2");
+        watch.stop("task-2").stop("task-all");
     }
 
 }
