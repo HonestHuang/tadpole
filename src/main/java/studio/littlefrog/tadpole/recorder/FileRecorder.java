@@ -12,7 +12,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class FileRecorder implements IRecorder {
     private static Logger logger = LoggerFactory.getLogger(FileRecorder.class);
@@ -21,9 +20,6 @@ public class FileRecorder implements IRecorder {
 
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
-
-    private AtomicLong wrotePosition = new AtomicLong(0L);
-    private int bufferSize = 0;
 
     private String lineSeparator = System.getProperty("line.separator");
 
@@ -61,7 +57,7 @@ public class FileRecorder implements IRecorder {
 
     @Override
     public IRecorder append(String message) {
-        write(ByteBuffer.wrap((message + lineSeparator).getBytes(Charset.forName("utf-8"))));
+        write(ByteBuffer.wrap(message.getBytes(Charset.forName("utf-8"))));
         return this;
     }
 
@@ -74,13 +70,34 @@ public class FileRecorder implements IRecorder {
 
     private synchronized void write(ByteBuffer msgBuffer) {
         if (byteBuffer.remaining() >= msgBuffer.remaining()) {
-            bufferSize += msgBuffer.remaining();
             byteBuffer.put(msgBuffer);
         } else {
+            int needLength = msgBuffer.remaining();
+            int remainder = byteBuffer.remaining();
+            ByteBuffer buffer = ByteBuffer.allocate(needLength - remainder);
+
+            for (int i = 0; i < needLength; i++) {
+                if (i < remainder) {
+                    byteBuffer.put(msgBuffer.get(i));
+                } else {
+                    buffer.put(msgBuffer.get(i));
+                }
+            }
+
             flushToDisk();
-            bufferSize = msgBuffer.remaining();
+            write(buffer);
         }
     }
+
+//    private synchronized void write(ByteBuffer msgBuffer) {
+//        try {
+//            msgBuffer.flip();
+//            fileChannel.write(msgBuffer);
+//        } catch (IOException e) {
+//            logger.error("写入文件失败", e);
+//        }
+//
+//    }
 
 
     @Override
@@ -101,16 +118,15 @@ public class FileRecorder implements IRecorder {
         } catch (IOException e) {
             logger.error("写入文件失败", e);
         }
-        wrotePosition.addAndGet(bufferSize);
         byteBuffer.clear();
     }
 
     public static void main(String args[]) throws Exception {
         TimeWatch watch = new TimeWatch();
         watch.start();
-        try (IRecorder recorder = new FileRecorder("E:\\log", "a.txt")) {
+        try (IRecorder recorder = new FileRecorder("E:\\log", "b.txt")) {
             for (int i = 0; i < 1024000; i++) {
-                recorder.append("测试1111111111111111" + i).br();
+                recorder.append("index" + i).br();
             }
         }
         watch.stop();
