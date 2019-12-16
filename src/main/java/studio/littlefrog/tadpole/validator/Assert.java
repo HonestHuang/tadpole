@@ -23,6 +23,11 @@ public class Assert {
             exception(message);
         }
     }
+    public static void isFalse(boolean expression, String message) {
+        if (expression) {
+            exception(message);
+        }
+    }
 
     public static void notTrue(boolean expression, String message) {
         if (expression) {
