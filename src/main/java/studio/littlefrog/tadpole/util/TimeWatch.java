@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
  * 用以统计耗时
  */
 public class TimeWatch {
-    private static Logger logger = LoggerFactory.getLogger(Exporter.class);
+    private static Logger logger = LoggerFactory.getLogger(TimeWatch.class);
 
     private Map<String, TimeHolder> mapTimeHolder = new HashMap<>();
     private static final String defaultTitle = "默认";
