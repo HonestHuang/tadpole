@@ -49,13 +49,22 @@ public class TimeWatch {
     public TimeWatch stop(String key) {
         Assert.isTrue(mapTimeHolder.containsKey(key), "key对应的任务不存在");
         TimeHolder timeHolder = mapTimeHolder.get(key);
-        consoleConsumer.accept(timeHolder.key, System.currentTimeMillis() - timeHolder.start);
+        if (!timeHolder.closed) {
+            timeHolder.closed = true;
+            consoleConsumer.accept(timeHolder.key, System.currentTimeMillis() - timeHolder.start);
+        }
+        return this;
+    }
+
+    public TimeWatch stopAll() {
+        mapTimeHolder.keySet().forEach(this::stop);
         return this;
     }
 
     private static class TimeHolder {
         private String key;
         private Long start = System.currentTimeMillis();
+        private Boolean closed = false;
 
 
         TimeHolder(String key) {
@@ -65,14 +74,14 @@ public class TimeWatch {
 
     public static void main(String args[]) throws Exception {
 
-        TimeWatch watch = new TimeWatch((title,time)->{
-            System.out.println(String.format("任务%s使用时间%dms",title,time));
+        TimeWatch watch = new TimeWatch((title, time) -> {
+            System.out.println(String.format("任务%s使用时间%dms", title, time));
         });
         watch.start("task-1").start("task-all");
-        Thread.sleep(3000);
+        Thread.sleep(1000);
         watch.stop("task-1").start("task-2");
-        Thread.sleep(5000);
-        watch.stop("task-2").stop("task-all");
+        Thread.sleep(3000);
+        watch.stopAll();
     }
 
 }
