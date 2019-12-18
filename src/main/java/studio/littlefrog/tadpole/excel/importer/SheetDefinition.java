@@ -4,9 +4,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import studio.littlefrog.tadpole.excel.CellValueGetter;
+import studio.littlefrog.tadpole.excel.importer.setter.Setter;
 import studio.littlefrog.tadpole.excel.importer.setter.SetterProvider;
 import studio.littlefrog.tadpole.validator.Assert;
-import studio.littlefrog.tadpole.validator.ValidateException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class SheetDefinition<T> {
     private Integer start;
     private Integer end;
     private Consumer<T> consumer;
+    private Setter setter;
 
     public SheetDefinition(Importer.Builder build, Class<T> klass) {
         this(build, klass, 0);
@@ -32,6 +34,7 @@ public class SheetDefinition<T> {
         this.build = build;
         this.klass = klass;
         this.index = index;
+        this.setter = SetterProvider.getInstance().findCandidate(klass);
     }
 
     public SheetDefinition<T> col(Integer index, String field) {
@@ -49,14 +52,14 @@ public class SheetDefinition<T> {
         return this;
     }
 
-    public SheetDefinition<T> start(Integer start) {
+    public SheetDefinition<T> from(Integer start) {
         Assert.notNull(start, "start不能为空");
         Assert.gtZero(start, "start必须大于0");
         this.start = start;
         return this;
     }
 
-    public SheetDefinition<T> end(Integer end) {
+    public SheetDefinition<T> to(Integer end) {
         Assert.notNull(end, "end不能为空");
         Assert.gtZero(end, "end必须大于0");
         this.end = end;
@@ -84,45 +87,43 @@ public class SheetDefinition<T> {
         Assert.gtZero(start, "start必须大于0");
         Assert.gtZero(end, "end必须大于0");
 
-//        Assert.notBlank(name,"");
     }
-//    public Boolean exist() {
-//        return StringUtils.isNotBlank(name) || CollectionUtils.isNotEmpty(columns);
-//    }
-//
 
     public void generate(Workbook workbook) {
         final Sheet sheet = workbook.getSheetAt(index);
 
         int _start = getValidStart(sheet.getFirstRowNum());
-        int _end = getValidEnd(sheet.getFirstRowNum());
+        int _end = getValidEnd(sheet.getLastRowNum());
 
         for (int i = _start; i <= _end; i++) {
             Row row = sheet.getRow(i);
+            T obj;
+            try {
+                obj = klass.newInstance();
+            } catch (Exception e) {
+                throw new IllegalStateException("实例化失败");
+            }
+
             columns.forEach(column -> {
-                Cell cell = row.getCell(column.getIndex());
+                Cell cell = Objects.nonNull(row) ? row.getCell(column.getIndex()) : null;
                 Function<String, Object> formatter = column.getFormatter();
                 Object val;
                 if (Objects.nonNull(formatter)) {
-                    val = formatter.apply(cell.getStringCellValue());
+                    val = formatter.apply(CellValueGetter.getStringValue(cell));
                 } else {
-                    val = cell.getStringCellValue();
+                    val = CellValueGetter.getStringValue(cell);
                 }
-                T obj = null;
-                try {
-                    obj = klass.newInstance();
-                } catch (Exception e) {
-                    throw new ValidateException("实例化失败");
-                }
-                SetterProvider.getInstance().findCandidate(klass).set(obj, column.getField(), val);
-                if (Objects.nonNull(list)) {
-                    list.add(obj);
-                }
-                if (Objects.nonNull(consumer)) {
-                    consumer.accept(obj);
-                }
+                setter.set(obj, column.getField(), val);
             });
+
+            if (Objects.nonNull(list)) {
+                list.add(obj);
+            }
+            if (Objects.nonNull(consumer)) {
+                consumer.accept(obj);
+            }
         }
+
 
     }
 

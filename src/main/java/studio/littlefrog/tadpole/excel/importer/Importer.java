@@ -1,20 +1,20 @@
 package studio.littlefrog.tadpole.excel.importer;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import studio.littlefrog.tadpole.excel.exporter.SheetDefinition;
 import studio.littlefrog.tadpole.validator.Assert;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Importer {
 
-//    private static List v;
     private static Logger logger = LoggerFactory.getLogger(Importer.class);
 
     private Importer.Builder builder;
@@ -26,9 +26,36 @@ public class Importer {
     private Importer() {
     }
 
+    private Workbook workbook() throws Exception {
+        switch (builder.version) {
+            case 2003:
+                return new HSSFWorkbook(builder.inputStream);
+            case 2007:
+            default:
+                return new XSSFWorkbook(builder.inputStream);
+        }
+    }
+
+    private void exception(Exception e) {
+        logger.error("导出excel异常", e);
+        Consumer<Exception> consumer = this.builder.exceptionConsumer;
+        if (Objects.nonNull(consumer)) {
+            consumer.accept(e);
+        }
+    }
 
     public void generate() {
+        try {
 
+            try (Workbook workbook = workbook()) {
+                builder.sheets.forEach(s -> s.generate(workbook));
+            } catch (Exception e) {
+                exception(e);
+            }
+
+        } catch (Exception e) {
+            exception(e);
+        }
     }
 
     public static class Builder {
@@ -38,8 +65,6 @@ public class Importer {
         private Short version = 2003;
 
         private InputStream inputStream;
-
-        private Consumer<byte[]> outConsumer;
 
         private Consumer<Exception> exceptionConsumer;
 
@@ -64,40 +89,49 @@ public class Importer {
             return this;
         }
 
+        public Importer.Builder input(File file) {
+            try {
+                this.inputStream = new FileInputStream(file);
+            } catch (Exception e) {
+                throw new IllegalStateException("文件输入流创建失败");
+            }
+            return this;
+        }
+
         public Importer.Builder exception(Consumer<Exception> exceptionConsumer) {
             this.exceptionConsumer = exceptionConsumer;
             return this;
         }
 
-//        public <T> SheetDefinition<T> sheet(List<T> list) {
-//            SheetDefinition<T> h = new SheetDefinition(this, list);
-//            sheets.add(h);
-//            return h;
-//        }
-//
-//        public <T> SheetDefinition<T> sheet(String name, List<T> list) {
-//            SheetDefinition<T> h = new SheetDefinition<>(this, name, list);
-//            sheets.add(h);
-//            return h;
-//        }
-//
-//        public <T> SheetDefinition<T> sheet(Iterator<T> iterator) {
-//            SheetDefinition<T> h = new SheetDefinition<>(this, iterator);
-//            sheets.add(h);
-//            return h;
-//        }
-//
-//        public <T> SheetDefinition<T> sheet(String name, Iterator<T> iterator) {
-//            SheetDefinition<T> h = new SheetDefinition<>(this, name, iterator);
-//            sheets.add(h);
-//            return h;
-//        }
+        public <T> SheetDefinition<T> sheet(Class<T> cls) {
+            SheetDefinition<T> h = new SheetDefinition<>(this, cls);
+            sheets.add(h);
+            return h;
+        }
+
+        public <T> SheetDefinition<T> sheet(Class<T> cls, Integer index) {
+            SheetDefinition<T> h = new SheetDefinition<>(this, cls, index);
+            sheets.add(h);
+            return h;
+        }
 
         public Importer build() {
             Assert.isTrue(Objects.nonNull(inputStream), "数据输入为空");
             sheets.forEach(SheetDefinition::validate);
             return new Importer(this);
         }
+    }
+
+    public static void main(String args[]) {
+        File file = new File("D:\\blacklist.xlsx");
+        List list = new ArrayList<>();
+        new Builder()
+                .v2007().input(file)
+                .sheet(HashMap.class).from(1)
+                .col(1, "domainId")
+                .list(list).end()
+                .build().generate();
+
     }
 
 }

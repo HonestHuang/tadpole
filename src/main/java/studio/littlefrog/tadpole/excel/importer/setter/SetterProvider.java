@@ -33,7 +33,7 @@ public class SetterProvider {
     public Setter findCandidate(Class klass) {
         return setters
                 .stream()
-                .sorted(Comparator.comparing(Setter::sort))
+                .sorted(Comparator.comparing(Setter::sort).reversed())
                 .filter(s -> s.isCandidate(klass))
                 .findFirst()
                 .orElse(ClassSetter.newInstance())

@@ -6,5 +6,4 @@ public interface Setter {
     Boolean isCandidate(Class klass);
 
     Integer sort();
-
 }
