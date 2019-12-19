@@ -23,7 +23,8 @@ public class Downloader {
     private Downloader(Builder builder) {
         this.builder = builder;
     }
-
+    private Downloader() {
+    }
 
     public void process() {
         File file = builder.file;
