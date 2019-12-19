@@ -21,7 +21,7 @@ public class FileRecorder implements IRecorder {
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
 
-    private String lineSeparator = System.getProperty("line.separator");
+
 
     public FileRecorder(String dir, String name) throws Exception {
         checkAndMakeDir(dir);
@@ -62,11 +62,6 @@ public class FileRecorder implements IRecorder {
     }
 
     @Override
-    public IRecorder br() {
-        return br(1);
-    }
-
-    @Override
     public IRecorder br(Integer num) {
         for (int i = 0; i < num; i++) {
             write(ByteBuffer.wrap((lineSeparator).getBytes()));
@@ -94,16 +89,6 @@ public class FileRecorder implements IRecorder {
             write(buffer);
         }
     }
-
-//    private synchronized void write(ByteBuffer msgBuffer) {
-//        try {
-//            msgBuffer.flip();
-//            fileChannel.write(msgBuffer);
-//        } catch (IOException e) {
-//            logger.error("写入文件失败", e);
-//        }
-//
-//    }
 
 
     @Override

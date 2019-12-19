@@ -6,7 +6,7 @@
 
     <groupId>studio.littlefrog.tadpole</groupId>
     <artifactId>tadpole</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1-ALPHA</version>
 
     <dependencies>
         <dependency>
@@ -42,6 +42,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 
