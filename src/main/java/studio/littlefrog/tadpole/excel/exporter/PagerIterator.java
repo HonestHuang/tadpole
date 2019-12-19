@@ -6,13 +6,22 @@ import java.util.Objects;
 
 public class PagerIterator<T> implements Iterator<T> {
 
-    private int pageNo;
+    private int pageNo = 0;
     private int pageSize = 20;
     private List<T> list;
     private PageFetcher<T> pageFetcher;
-    private int currentPageIndex;
+    private int pointer;
 
-    public static interface PageFetcher<T> {
+    public PagerIterator(int pageNo, int pageSize) {
+        this.pageNo = pageNo;
+        this.pageSize = pageSize;
+    }
+
+    public PagerIterator() {
+
+    }
+
+    public interface PageFetcher<T> {
         List<T> fetch(int pageNo, int pageSize);
     }
 
@@ -23,16 +32,16 @@ public class PagerIterator<T> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-        if (Objects.isNull(list) || currentPageIndex >= list.size()) {
+        if (Objects.isNull(list) || pointer >= list.size()) {
             list = this.pageFetcher.fetch(pageNo, pageSize);
             pageNo++;
-            currentPageIndex = 0;
+            pointer = 0;
         }
         return list.size() > 0;
     }
 
     @Override
     public T next() {
-        return list.get(currentPageIndex++);
+        return list.get(pointer++);
     }
 }
