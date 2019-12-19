@@ -1,21 +1,15 @@
 package studio.littlefrog.tadpole.recorder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class Slf4jRecorder implements IRecorder {
-
-    private static Logger logger = LoggerFactory.getLogger(Slf4jRecorder.class);
-
+public class JdkRecorder implements IRecorder {
     @Override
     public IRecorder append(String message) {
-        logger.info(message);
+        System.out.print(message);
         return this;
     }
 
     @Override
     public IRecorder br(Integer num) {
-//        logger.info("");
+        System.out.println("");
         return this;
     }
 
