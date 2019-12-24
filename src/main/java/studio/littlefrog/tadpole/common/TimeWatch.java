@@ -2,10 +2,10 @@ package studio.littlefrog.tadpole.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import studio.littlefrog.tadpole.validator.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -34,9 +34,18 @@ public class TimeWatch {
         return this;
     }
 
-    public TimeWatch start(String key) {
-        Assert.isFalse(mapTimeHolder.containsKey(key), "请勿重复start");
-        mapTimeHolder.put(key, new TimeHolder(key));
+    public TimeWatch start(String... keys) {
+        if (Objects.isNull(keys)) {
+            return this;
+        }
+
+        for (String key : keys) {
+            if (mapTimeHolder.containsKey(key)) {
+                logger.error("请勿重复start");
+            } else {
+                mapTimeHolder.put(key, new TimeHolder(key));
+            }
+        }
         return this;
     }
 
@@ -46,8 +55,11 @@ public class TimeWatch {
     }
 
     public TimeWatch stop(String key) {
-        Assert.isTrue(mapTimeHolder.containsKey(key), "key对应的任务不存在");
-        TimeHolder timeHolder = mapTimeHolder.get(key);
+        if (!mapTimeHolder.containsKey(key)) {
+            logger.error("key对应的任务不存在");
+            return this;
+        }
+        TimeHolder timeHolder = mapTimeHolder.remove(key);
         if (!timeHolder.closed) {
             timeHolder.closed = true;
             consoleConsumer.accept(timeHolder.key, System.currentTimeMillis() - timeHolder.start);
