@@ -6,7 +6,7 @@
 
     <groupId>studio.littlefrog.tadpole</groupId>
     <artifactId>tadpole</artifactId>
-    <version>1.0.1-ALPHA</version>
+    <version>1.0.1-release</version>
 
     <dependencies>
         <dependency>
