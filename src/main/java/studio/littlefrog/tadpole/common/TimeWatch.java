@@ -3,9 +3,7 @@ package studio.littlefrog.tadpole.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -68,7 +66,7 @@ public class TimeWatch {
     }
 
     public TimeWatch stopAll() {
-        mapTimeHolder.keySet().forEach(this::stop);
+        new HashSet<>(mapTimeHolder.keySet()).forEach(this::stop);
         return this;
     }
 
@@ -81,5 +79,11 @@ public class TimeWatch {
         TimeHolder(String key) {
             this.key = key;
         }
+    }
+
+
+    public static void main(String args[]){
+        TimeWatch watch = new TimeWatch();
+        watch.start("1","2","3","4","5").stopAll();
     }
 }
