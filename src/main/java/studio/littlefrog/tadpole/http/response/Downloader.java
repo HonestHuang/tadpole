@@ -1,13 +1,12 @@
 package studio.littlefrog.tadpole.http.response;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import studio.littlefrog.tadpole.recorder.IRecorder;
 import studio.littlefrog.tadpole.validator.Assert;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -23,23 +22,41 @@ public class Downloader {
     private Downloader(Builder builder) {
         this.builder = builder;
     }
+
     private Downloader() {
     }
 
     public void process() {
         File file = builder.file;
+        InputStream input = builder.input;
         OutputStream out = builder.outputStream;
 
+        try {
+            if (Objects.nonNull(file)) {
+                zeroCopy(file, out);
+            }
+            if (Objects.nonNull(input)) {
+                commonWrite(input, out);
+            }
+        } catch (Exception e) {
+            exception(e);
+        }
+    }
+
+    private void commonWrite(InputStream in, OutputStream out) throws IOException {
+        IOUtils.copy(in, out);
+    }
+
+    private void zeroCopy(File file, OutputStream out) throws IOException {
         try (FileInputStream input = new FileInputStream(file);
              FileChannel fileChannel = input.getChannel();
              WritableByteChannel outChannel = Channels.newChannel(out)
         ) {
             fileChannel.transferTo(0, file.length(), outChannel);
             out.flush();
-        } catch (Exception e) {
-            exception(e);
         }
     }
+
 
     private void exception(Exception e) {
         logger.error("导出excel异常", e);
@@ -56,6 +73,7 @@ public class Downloader {
     public static class Builder {
 
         private File file;
+        private InputStream input;
 
         private OutputStream outputStream;
 
@@ -66,6 +84,11 @@ public class Downloader {
 
         public Builder file(File file) {
             this.file = file;
+            return this;
+        }
+
+        public Builder input(InputStream input) {
+            this.input = input;
             return this;
         }
 
@@ -85,7 +108,7 @@ public class Downloader {
         }
 
         private void validate() {
-            Assert.notNull(file, "文件或文件路径未设置");
+            Assert.isTrue(Objects.nonNull(file) || Objects.nonNull(input), "输入未设置");
             Assert.notNull(outputStream, "outputStream未设置");
         }
 
