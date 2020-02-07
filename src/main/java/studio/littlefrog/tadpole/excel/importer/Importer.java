@@ -122,16 +122,5 @@ public class Importer {
         }
     }
 
-    public static void main(String args[]) {
-        File file = new File("D:\\blacklist.xlsx");
-        List list = new ArrayList<>();
-        new Builder()
-                .v2007().input(file)
-                .sheet(HashMap.class).from(1)
-                .col(1, "domainId")
-                .list(list).end()
-                .build().generate();
-
-    }
 
 }

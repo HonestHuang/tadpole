@@ -1,12 +1,16 @@
 package studio.littlefrog.tadpole.http.response;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import studio.littlefrog.tadpole.recorder.IRecorder;
 import studio.littlefrog.tadpole.validator.Assert;
+import sun.misc.BASE64Encoder;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -26,12 +30,33 @@ public class Downloader {
     private Downloader() {
     }
 
+    private void prepare() throws UnsupportedEncodingException{
+        String name = builder.name;
+        HttpServletResponse response = builder.response;
+        if (Objects.nonNull(response)) {
+            response.setContentType("application/octet-stream");
+            if (StringUtils.isNotBlank(name)) {
+                String agent = "";//request.getHeader("user-agent");
+                if (agent.contains("Firefox")) {
+                    name = "=?UTF-8?B?" + new BASE64Encoder().encode(name.getBytes("utf-8")) + "?=";
+                } else {
+                    name = URLEncoder.encode(name, "utf-8");
+                    name = name.replace("+", " ");
+                }
+                response.setHeader("Content-Disposition", "attachment;filename=" + name);
+
+            }
+        }
+    }
+
     public void process() {
         File file = builder.file;
         InputStream input = builder.input;
         OutputStream out = builder.outputStream;
 
         try {
+            prepare();
+
             if (Objects.nonNull(file)) {
                 zeroCopy(file, out);
             }
@@ -74,6 +99,8 @@ public class Downloader {
 
         private File file;
         private InputStream input;
+        private HttpServletResponse response;
+        private String name;
 
         private OutputStream outputStream;
 
@@ -102,6 +129,16 @@ public class Downloader {
             return this;
         }
 
+        public Builder response(HttpServletResponse response) {
+            this.response = response;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
         public Builder exception(Consumer<Exception> exceptionConsumer) {
             this.exceptionConsumer = exceptionConsumer;
             return this;
@@ -112,7 +149,7 @@ public class Downloader {
             Assert.notNull(outputStream, "outputStream未设置");
         }
 
-        public Downloader build() {
+        public Downloader build(){
             validate();
             return new Downloader(this);
         }

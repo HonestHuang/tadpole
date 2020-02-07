@@ -18,10 +18,12 @@ public class ClassSetter implements Setter {
         }
     }
 
+    @Override
     public Boolean isCandidate(Class klass) {
         return true;
     }
 
+    @Override
     public Integer sort() {
         return Integer.MIN_VALUE;
     }

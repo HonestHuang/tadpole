@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import studio.littlefrog.tadpole.excel.CellValueGetter;
 import studio.littlefrog.tadpole.excel.importer.setter.Setter;
 import studio.littlefrog.tadpole.excel.importer.setter.SetterProvider;
+import studio.littlefrog.tadpole.function.TriConsumer;
 import studio.littlefrog.tadpole.validator.Assert;
 
 import java.util.ArrayList;
@@ -15,6 +16,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * @author HonestHuang
+ */
 public class SheetDefinition<T> {
     private Integer index;
     private List<ColumnDefinition> columns = new ArrayList<>();
@@ -22,8 +26,10 @@ public class SheetDefinition<T> {
     private List<T> list;
     private Class<T> klass;
     private Integer start;
+    private Integer titleIndex;
     private Integer end;
     private Consumer<T> consumer;
+    private TriConsumer<T, Row, Row> rowConsumer;
     private Setter setter;
 
     public SheetDefinition(Importer.Builder build, Class<T> klass) {
@@ -54,8 +60,15 @@ public class SheetDefinition<T> {
 
     public SheetDefinition<T> from(Integer start) {
         Assert.notNull(start, "start不能为空");
-        Assert.gtZero(start, "start必须大于0");
+        Assert.gteZero(start, "start必须大于等于0");
         this.start = start;
+        return this;
+    }
+
+    public SheetDefinition<T> title(Integer index) {
+        Assert.notNull(index, "start不能为空");
+        Assert.gteZero(index, "start必须大于等于0");
+        this.titleIndex = index;
         return this;
     }
 
@@ -78,6 +91,12 @@ public class SheetDefinition<T> {
         return this;
     }
 
+    public SheetDefinition<T> rowConsumer(TriConsumer<T, Row, Row> consumer) {
+        Assert.notNull(consumer, "consumer不能为空");
+        this.rowConsumer = consumer;
+        return this;
+    }
+
     public Importer.Builder end() {
         return build;
     }
@@ -94,6 +113,8 @@ public class SheetDefinition<T> {
 
         int _start = getValidStart(sheet.getFirstRowNum());
         int _end = getValidEnd(sheet.getLastRowNum());
+
+        Row titleRow = Objects.nonNull(titleIndex) ? sheet.getRow(titleIndex) : null;
 
         for (int i = _start; i <= _end; i++) {
             Row row = sheet.getRow(i);
@@ -121,6 +142,9 @@ public class SheetDefinition<T> {
             }
             if (Objects.nonNull(consumer)) {
                 consumer.accept(obj);
+            }
+            if (Objects.nonNull(rowConsumer)) {
+                rowConsumer.accept(obj, row, titleRow);
             }
         }
 
