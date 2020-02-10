@@ -30,14 +30,13 @@ public class Downloader {
     private Downloader() {
     }
 
-    private void prepare() throws UnsupportedEncodingException{
+    private void prepare() throws UnsupportedEncodingException {
         String name = builder.name;
         HttpServletResponse response = builder.response;
         if (Objects.nonNull(response)) {
             response.setContentType("application/octet-stream");
             if (StringUtils.isNotBlank(name)) {
-                String agent = "";//request.getHeader("user-agent");
-                if (agent.contains("Firefox")) {
+                if (builder.agent.contains("Firefox")) {
                     name = "=?UTF-8?B?" + new BASE64Encoder().encode(name.getBytes("utf-8")) + "?=";
                 } else {
                     name = URLEncoder.encode(name, "utf-8");
@@ -101,6 +100,7 @@ public class Downloader {
         private InputStream input;
         private HttpServletResponse response;
         private String name;
+        private String agent = "";
 
         private OutputStream outputStream;
 
@@ -108,6 +108,10 @@ public class Downloader {
 
         private IRecorder recorder;
 
+        public Builder agent(String agent) {
+            this.agent = agent;
+            return this;
+        }
 
         public Builder file(File file) {
             this.file = file;
@@ -149,7 +153,7 @@ public class Downloader {
             Assert.notNull(outputStream, "outputStream未设置");
         }
 
-        public Downloader build(){
+        public Downloader build() {
             validate();
             return new Downloader(this);
         }
