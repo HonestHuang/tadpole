@@ -2,7 +2,6 @@ package studio.littlefrog.tadpole.recorder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import studio.littlefrog.tadpole.common.TimeWatch;
 import studio.littlefrog.tadpole.validator.Assert;
 
 import java.io.File;
@@ -20,7 +19,6 @@ public class FileRecorder implements IRecorder {
 
     private RandomAccessFile randomAccessFile;
     private FileChannel fileChannel;
-
 
 
     public FileRecorder(String dir, String name) throws Exception {
@@ -110,16 +108,5 @@ public class FileRecorder implements IRecorder {
             logger.error("写入文件失败", e);
         }
         byteBuffer.clear();
-    }
-
-    public static void main(String args[]) throws Exception {
-        TimeWatch watch = new TimeWatch();
-        watch.start();
-        try (IRecorder recorder = new FileRecorder("E:\\log", "b.txt")) {
-            for (int i = 0; i < 102400000; i++) {
-                recorder.append("0");
-            }
-        }
-        watch.stop();
     }
 }

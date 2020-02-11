@@ -3,17 +3,22 @@ package studio.littlefrog.tadpole.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
  * 用以统计耗时
+ *
+ * @author HonestHuang
  */
 public class TimeWatch {
     private static Logger logger = LoggerFactory.getLogger(TimeWatch.class);
 
     private Map<String, TimeHolder> mapTimeHolder = new HashMap<>();
-    private static final String defaultTitle = "默认";
+    private static final String DEFAULT_TITLE = "默认";
 
     private BiConsumer<String, Long> consoleConsumer;
 
@@ -28,7 +33,7 @@ public class TimeWatch {
     }
 
     public TimeWatch start() {
-        start(defaultTitle);
+        start(DEFAULT_TITLE);
         return this;
     }
 
@@ -48,7 +53,7 @@ public class TimeWatch {
     }
 
     public TimeWatch stop() {
-        stop(defaultTitle);
+        stop(DEFAULT_TITLE);
         return this;
     }
 
@@ -79,11 +84,5 @@ public class TimeWatch {
         TimeHolder(String key) {
             this.key = key;
         }
-    }
-
-
-    public static void main(String args[]){
-        TimeWatch watch = new TimeWatch();
-        watch.start("1","2","3","4","5").stopAll();
     }
 }
