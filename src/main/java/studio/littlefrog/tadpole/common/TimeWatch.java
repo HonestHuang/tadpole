@@ -18,7 +18,7 @@ public class TimeWatch {
     private static Logger logger = LoggerFactory.getLogger(TimeWatch.class);
 
     private Map<String, TimeHolder> mapTimeHolder = new HashMap<>();
-    private static final String DEFAULT_TITLE = "默认";
+    private static final String defaultTitle = "默认";
 
     private BiConsumer<String, Long> consoleConsumer;
 
@@ -33,7 +33,7 @@ public class TimeWatch {
     }
 
     public TimeWatch start() {
-        start(DEFAULT_TITLE);
+        start(defaultTitle);
         return this;
     }
 
@@ -53,7 +53,7 @@ public class TimeWatch {
     }
 
     public TimeWatch stop() {
-        stop(DEFAULT_TITLE);
+        stop(defaultTitle);
         return this;
     }
 
